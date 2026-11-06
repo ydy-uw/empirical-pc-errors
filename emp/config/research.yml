@@ -1,0 +1,102 @@
+version: 1
+
+paths:
+  raw_crsp_root: data/raw/wrds/crsp_ciz
+  schema_snapshot: notes/crsp_schema_snapshot.json
+  legacy_root: legacy
+
+wrds:
+  library: crsp_a_stock
+  daily_table: dsf_v2
+  # Primary raw coverage starts one year before the 2006 formation sample so
+  # the first month has a complete 63-trading-day lookback.
+  start_date: 2005-01-01
+  end_date: 2025-12-31
+  annual_chunks: true
+  query_chunksize: 250000
+  raw_format: csv.gz
+  immutable_snapshots: true
+  columns:
+    - permno
+    - permco
+    - sharetype
+    - securitytype
+    - securitysubtype
+    - usincflg
+    - issuertype
+    - primaryexch
+    - conditionaltype
+    - tradingstatusflg
+    - dlycaldt
+    - dlydelflg
+    - dlyprc
+    - dlyprcflg
+    - dlycap
+    - dlycapflg
+    - dlyret
+    - dlyretmissflg
+    - dlyretdurflg
+    - dlydistretflg
+    - dlyvol
+
+universe:
+  sharetype: [NS]
+  securitytype: [EQTY]
+  securitysubtype: [COM]
+  usincflg: [Y]
+  issuertype: [ACOR, CORP]
+  primaryexch: [N, A, Q]
+  conditionaltype: RW
+  tradingstatusflg: A
+  company_key: permco
+  security_key: permno
+  representative_rule: largest_eligible_security_cap
+  company_cap_rule: sum_all_common_share_classes
+
+rolling:
+  formation_frequency: calendar_month_end
+  estimation_trading_days: 63
+  estimation_required_observations: 63
+  allowed_return_duration_flags: [D1, D2, D3, D4, DU]
+  sizes: [500, 1000, 2000, 3000]
+  selection_designs: [top_cap]
+  random_replicates: 100
+  random_master_seed: 20260723
+  random_samples_nested_across_sizes: true
+  oos_horizon: next_calendar_month
+  return_field: dlyret
+  # CIZ dlyret already contains the terminal return.
+  compound_separate_delisting_return: false
+  post_delisting_sleeve: zero_return_cash
+  winsorize_primary_returns: false
+
+sample:
+  first_formation_date: 2006-01-01
+  last_formation_date: 2025-11-30
+  # The actual first usable month is determined by 63/63 and N=3000 QA.
+  common_history_start_is_mechanical: true
+
+factors:
+  jung_primary_alpha: 0.10
+  jung_alpha_sensitivity: [0.05, 0.10, 0.20]
+  jung_initial_max: 30
+  jung_retry_max: 50
+  fixed_q_grid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 30]
+  centered_multifactor_matrix: true
+
+corrections:
+  methods:
+    - one_factor_jse_goldberg2025
+    - one_factor_jse_centered_mp
+    - multi_factor_sharp
+  one_factor_exact_uses_uncentered_yy_over_n: true
+  one_factor_positive_part: true
+  multifactor_mp_bulk_adjustment: true
+
+qa_gates:
+  require_return_missing_flag: NA
+  incomplete_terminal_return_action: skip_universe_month_cell
+  min_factor_participation_fraction: 0.01
+  max_factor_absolute_loading: 0.50
+  localized_factor_status: descriptive_not_primary
+  extreme_return_event_threshold_absolute: 1.0

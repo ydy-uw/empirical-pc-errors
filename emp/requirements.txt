@@ -1,0 +1,10 @@
+wrds==3.5.0
+paramiko==5.0.0
+numpy==2.5.1
+pandas==2.2.3
+scipy==1.18.0
+pyarrow==25.0.0
+matplotlib==3.11.1
+seaborn==0.13.2
+PyYAML==6.0.3
+pytest==9.1.1

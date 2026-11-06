@@ -1,0 +1,44 @@
+# Licensed WRDS/CRSP data and anything derived from it must never be committed.
+emp/data/
+emp/output/
+emp/tmp/
+emp/legacy/
+emp/notes/
+rerun_20260928/work/
+rerun_20260928/report/
+outlier_cleaning/_cache/
+outlier_cleaning/experiments/
+outlier_cleaning/comparison/
+outlier_cleaning/overleaf_reports/
+outlier_cleaning/reports/
+companion/out/
+figure_code/record/
+figure_code/out/*
+!figure_code/out/finite_p_error.csv
+/paper/
+/reports/
+
+# Data files anywhere in the tree.
+*.parquet
+*.feather
+*.arrow
+*.pkl
+*.npz
+*.gz
+*.zip
+*.csv
+!figure_code/out/finite_p_error.csv
+
+# WRDS credentials and local settings.
+emp/.wrds/*
+!emp/.wrds/username.example
+pgpass.conf
+.pgpass
+
+# Python and logs.
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.log
